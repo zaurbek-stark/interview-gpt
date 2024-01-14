@@ -1,38 +1,10 @@
-import { useEffect, useState, ComponentType } from 'react';
+import { useEffect, useState } from 'react';
 import { useChat } from 'ai/react';
-import dynamic from 'next/dynamic';
-
-type ChatMessage = {
-  author: {
-    username: string;
-    id: number;
-    avatarUrl: string;
-  },
-  text: string;
-  type: string;
-  timestamp: number;
-};
-
-type ChatBoxProps = {
-  messages: ChatMessage[];
-  userId: number;
-  onSendMessage: (message: string) => void;
-  width?: string;
-  height?: string;
-  style?: React.CSSProperties;
-};
+import ChatBox from 'react-chat-plugin';
 
 type ChatProps = {
   initialText?: string;
 };
-
-const ChatBox = dynamic<ChatBoxProps>(
-  () =>
-    import('react-chat-plugin').then(
-      (mod) => mod.default as ComponentType<ChatBoxProps>
-    ),
-  { loading: () => null, ssr: false }
-);
 
 const userAuthor = {
   username: 'User',
@@ -53,7 +25,7 @@ const Chat: React.FC<ChatProps> = ({ initialText }) => {
     type: 'text',
     timestamp: +new Date(),
   };
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([initialMessage]);
+  const [chatMessages, setChatMessages] = useState([initialMessage]);
   const { append, messages } = useChat({
     api: '/api/openai-gpt',
   });
@@ -62,15 +34,11 @@ const Chat: React.FC<ChatProps> = ({ initialText }) => {
     if (messages.length < 1) return;
     const authors = {
       user: userAuthor,
-      system: aiAuthor,
-      function: aiAuthor,
       assistant: aiAuthor,
-      data: aiAuthor,
-      tool: aiAuthor,
     }
     const chatMessagesArr = messages?.map(message => {
       return ({
-        author: authors[message.role],
+        author: authors[message.role as keyof typeof authors],
         text: message?.content,
         type: 'text',
         timestamp: +new Date(),
