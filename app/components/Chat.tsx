@@ -1,6 +1,11 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { useChat } from 'ai/react';
-import ChatBox from 'react-chat-plugin';
+import dynamic from 'next/dynamic';
+import type { ChatBoxProps } from 'react-chat-plugin';
+
+const ChatBox = dynamic<ChatBoxProps>(() => import('react-chat-plugin'), { ssr: false });
 
 type ChatProps = {
   initialText?: string;
