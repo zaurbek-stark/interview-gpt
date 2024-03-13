@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import ResumeUploader from './components/ResumeUploader';
+import Wrapper from './components/Wrapper';
 
 export default function Home() {
   return (
@@ -10,7 +10,7 @@ export default function Home() {
         <div className='logoBox'>
           <Image src="/logo.png" alt="InterviewGPT logo" width="400" height="75" />
         </div>
-        <ResumeUploader />
+        <Wrapper />
       </div>
     </main>
   )
