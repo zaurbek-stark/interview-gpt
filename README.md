@@ -4,7 +4,7 @@ This chatbot will help you prepare for your next behavioral interview! Just uplo
 
 This project is built using Nextjs. It utilizes the OpenAI GPT4 model for chat completion. The resume pdf is handled by PDF.js which extracts all the text from the document.
 
-<img src="interviewgpt-demo.gif" alt="app demo" width=600>
+<img src="InterviewGPT-demo.gif" alt="app demo" width=600>
 
 ## Getting Started
 
