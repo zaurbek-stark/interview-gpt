@@ -6,6 +6,7 @@ type InterviewData = {
   interviewType: string;
   resumeText: string;
   payment: string;
+  apiKey: string;
 };
 
 type Props = {
@@ -17,6 +18,7 @@ type Props = {
 const RequestForm: React.FC<Props> = ({interviewData, setInterviewData, setIsLoading}) => {
   const { interviewType } = interviewData;
   const [jobDescriptionUrl, setJobDescriptionUrl] = useState('');
+  const [error, setError] = useState('');
 
   const mergeTextContent = (textContent: TextContent) => {
     return textContent.items.map(item => {
@@ -25,7 +27,7 @@ const RequestForm: React.FC<Props> = ({interviewData, setInterviewData, setIsLoa
     }).join('')
   }
 
-  const readResume = async (pdfFile: File | undefined) => {
+  const readResume = async (pdfFile: File | undefined) => {    
     const pdfjs = await import('pdfjs-dist');
     pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
     
@@ -70,19 +72,30 @@ const RequestForm: React.FC<Props> = ({interviewData, setInterviewData, setIsLoa
   }
 
   const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!interviewData.apiKey) {
+      setError('OpenAI API Key is required. You can find your key here: https://platform.openai.com/account/api-keys');
+      return;
+    }
+
+    setError('');
     setIsLoading(true);
     setInterviewData(data => ({
       ...data,
       resumeText: ''
     }));
-    const file = event.target.files?.[0];
-    if (!file) {
-      console.error('No file selected');
-      setIsLoading(false);
-      return;
+
+    try {
+      const file = event.target.files?.[0];
+      if (!file) {
+        setError('The PDF wasn\'t uploaded correcty.');
+        setIsLoading(false);
+        return;
+      }
+      await scrapeJobDescription(jobDescriptionUrl);
+      await readResume(file);
+    } catch (error) {
+      setError('There was an error reading the resume. Please try again.');
     }
-    await scrapeJobDescription(jobDescriptionUrl);
-    await readResume(file);
   };
 
   return (
@@ -128,10 +141,25 @@ const RequestForm: React.FC<Props> = ({interviewData, setInterviewData, setIsLoa
           }))}
         />
       </div>
+      <div className="input-group">
+        <label htmlFor="apikey" className="input-label">🔑 OpenAI API Key</label>
+        <input
+          className="input-style"
+          name="apikey"
+          type="password"
+          placeholder="The key is needed to use the AI"
+          value={interviewData.apiKey}
+          onChange={(e) => setInterviewData(data => ({
+            ...data,
+            apiKey: e.target.value
+          }))}
+        />
+      </div>
       <div className="file-upload-btn-container">
         <input type="file" id="file-upload" onChange={handleResumeUpload} accept="application/pdf" hidden />
         <label htmlFor="file-upload" className="label-style main-btn">⚡️ Upload Resume</label>
       </div>
+      {error && <p className="error-message">{error}</p>}
     </div>
   );
 };

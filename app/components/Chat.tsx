@@ -12,6 +12,7 @@ type ChatProps = {
     jobDescriptionText: string;
     interviewType: string;
     payment: string;
+    apiKey: string;
   }
 };
 
@@ -46,7 +47,6 @@ type aiMessage = {
 const Chat: React.FC<ChatProps> = ({ initialText, interviewData }) => {
   const [input, setInput] = useState('');
   const { resumeText, jobDescriptionText, interviewType, payment } = interviewData;
-  console.log('payment:', payment);
   const initialMessage = {
     author: aiAuthor,
     text: initialText ?? 'Hello, I am Bob the Interviewer. How can I help you?',
@@ -108,9 +108,10 @@ JOB DESCRIPTION: ${jobDescriptionText}
 
     const messageToSend = [...aiMessages, {role: 'user', content: message }];
 
-    const response = await fetchOpenAIResponse(
-      messageToSend, 
-      (msg) => setChatMessages(messages => 
+    const response = await fetchOpenAIResponse({
+      apiKey: interviewData.apiKey,
+      messages: messageToSend, 
+      setMessage: (msg) => setChatMessages(messages => 
         [...messages.slice(0, messages.length-1), {
           author: aiAuthor,
           text: msg,
@@ -118,7 +119,7 @@ JOB DESCRIPTION: ${jobDescriptionText}
           timestamp: +new Date()
         }]
       )
-    );
+    });
     setAiMessages(messages => [...messages, {role: 'user', content: message }, {role: 'assistant', content: response }]);
   }
 
