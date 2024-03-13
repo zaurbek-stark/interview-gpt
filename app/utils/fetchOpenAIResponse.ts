@@ -3,13 +3,19 @@ type Message = {
   content: string;
 }
 
-export async function fetchOpenAIResponse(messages: Message[], setMessage: (message: string) => void) {
+type Props = {
+  apiKey: string;
+  messages: Message[];
+  setMessage: (msg: string) => void;
+}
+
+export async function fetchOpenAIResponse({apiKey, messages, setMessage}: Props){
   const response = await fetch(`/api/openai-gpt`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, apiKey }),
   });
 
   if (!response.body) {
