@@ -12,6 +12,7 @@ const ResumeUploader = () => {
     interviewType: '',
     resumeText: '',
     payment: '',
+    apiKey: '',
   });
 
   useEffect(() => {
@@ -24,7 +25,10 @@ RESUME: ${text}
 ------------
 JOB DESCRIPTION: ${interviewData.jobDescriptionText}
 ------------`;
-      await fetchOpenAIResponse([{role: 'user', content: messageToSend }], (msg) => setInitialText(msg));
+      await fetchOpenAIResponse({
+        apiKey: interviewData.apiKey,
+        messages: [{role: 'user', content: messageToSend }],
+        setMessage: (msg) => setInitialText(msg)});
     }
 
     if (isLoading && interviewData.resumeText !== '' && interviewData.resumeText !== undefined) {
