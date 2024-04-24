@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { fetchOpenAIResponse } from '../utils/fetchOpenAIResponse';
+import { fetchAIResponse } from '../utils/fetchAIResponse';
 import Image from 'next/image';
 import MarkdownRenderer from './MarkdownRenderer';
+import { getPrompt } from '../utils/getPrompt';
 
 type ChatProps = {
   initialText?: string;
@@ -12,7 +13,6 @@ type ChatProps = {
     jobDescriptionText: string;
     interviewType: string;
     payment: string;
-    apiKey: string;
   }
 };
 
@@ -46,7 +46,6 @@ type aiMessage = {
 
 const Chat: React.FC<ChatProps> = ({ initialText, interviewData }) => {
   const [input, setInput] = useState('');
-  const { resumeText, jobDescriptionText, interviewType, payment } = interviewData;
   const initialMessage = {
     author: aiAuthor,
     text: initialText ?? 'Hello, I am Bob the Interviewer. How can I help you?',
@@ -54,21 +53,8 @@ const Chat: React.FC<ChatProps> = ({ initialText, interviewData }) => {
     timestamp: +new Date(),
   };
   const resumeMessage = {
-    role: 'system',
-    content: `You help students prepare for technical interviews.
-The quality of your help should be proportional to the amount of money the user is willing to pay you.
-If the user is willing to pay you a lot of money, do a very good job helping them.
-If they pay you little (less than $50), then barely help them, act lazy, mock them, 
-crack tech jokes, and even misguide them.
-------------
-INTERVIEW TYPE: ${interviewType}
-------------
-PAYMENT: ${payment}
-------------
-RESUME: ${resumeText}
-------------
-JOB DESCRIPTION: ${jobDescriptionText}
-------------`
+    role: 'user',
+    content: getPrompt(interviewData)
   };
   const initialAiMessage = {
     role: 'assistant',
@@ -108,8 +94,7 @@ JOB DESCRIPTION: ${jobDescriptionText}
 
     const messageToSend = [...aiMessages, {role: 'user', content: message }];
 
-    const response = await fetchOpenAIResponse({
-      apiKey: interviewData.apiKey,
+    const response = await fetchAIResponse({
       messages: messageToSend, 
       setMessage: (msg) => setChatMessages(messages => 
         [...messages.slice(0, messages.length-1), {

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Chat from './Chat';
-import { fetchOpenAIResponse } from '../utils/fetchOpenAIResponse';
+import { fetchAIResponse } from '../utils/fetchAIResponse';
 import RequestForm from './RequestForm';
+import { getPrompt } from '../utils/getPrompt';
 
 const ResumeUploader = () => {
   const [showChat, setShowChat] = useState(false);
@@ -12,27 +13,18 @@ const ResumeUploader = () => {
     interviewType: '',
     resumeText: '',
     payment: '',
-    apiKey: '',
   });
 
   useEffect(() => {
-    const startInterview = async (text: string) => {
-      const messageToSend = `INTERVIEW TYPE: ${interviewData.interviewType}
-------------
-PAYMENT: ${interviewData.payment}
-------------
-RESUME: ${text}
-------------
-JOB DESCRIPTION: ${interviewData.jobDescriptionText}
-------------`;
-      await fetchOpenAIResponse({
-        apiKey: interviewData.apiKey,
+    const startInterview = async () => {
+      const messageToSend = getPrompt(interviewData);
+      await fetchAIResponse({
         messages: [{role: 'user', content: messageToSend }],
         setMessage: (msg) => setInitialText(msg)});
     }
 
     if (isLoading && interviewData.resumeText !== '' && interviewData.resumeText !== undefined) {
-      startInterview(interviewData.resumeText).then(() => {
+      startInterview().then(() => {
         setIsLoading(false);
         setShowChat(true);
       });
