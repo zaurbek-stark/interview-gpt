@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import type { TextContent, TextItem } from 'pdfjs-dist/types/src/display/api';
+import { processHtmlToText } from '../utils/processHtmlToText';
 
 type InterviewData = {
   jobDescriptionText: string;
   interviewType: string;
   resumeText: string;
   payment: string;
-  apiKey: string;
 };
 
 type Props = {
@@ -65,18 +65,14 @@ const RequestForm: React.FC<Props> = ({interviewData, setInterviewData, setIsLoa
       body: JSON.stringify({ url }),
     });
     const responseData = await response.json();
+    const textContent = processHtmlToText(responseData.textContent);
     setInterviewData(data => ({
       ...data,
-      jobDescriptionText: responseData.textContent
+      jobDescriptionText: textContent
     }));
   }
 
   const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!interviewData.apiKey) {
-      setError('OpenAI API Key is required. You can find your key here: https://platform.openai.com/account/api-keys');
-      return;
-    }
-
     setError('');
     setIsLoading(true);
     setInterviewData(data => ({
@@ -138,20 +134,6 @@ const RequestForm: React.FC<Props> = ({interviewData, setInterviewData, setIsLoa
           onChange={(e) => setInterviewData(data => ({
             ...data,
             payment: e.target.value
-          }))}
-        />
-      </div>
-      <div className="input-group">
-        <label htmlFor="apikey" className="input-label">🔑 OpenAI API Key</label>
-        <input
-          className="input-style"
-          name="apikey"
-          type="password"
-          placeholder="The key is needed to use the AI"
-          value={interviewData.apiKey}
-          onChange={(e) => setInterviewData(data => ({
-            ...data,
-            apiKey: e.target.value
           }))}
         />
       </div>

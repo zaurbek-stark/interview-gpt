@@ -4,18 +4,17 @@ type Message = {
 }
 
 type Props = {
-  apiKey: string;
   messages: Message[];
   setMessage: (msg: string) => void;
 }
 
-export async function fetchOpenAIResponse({apiKey, messages, setMessage}: Props){
-  const response = await fetch(`/api/openai-gpt`, {
+export async function fetchAIResponse({messages, setMessage}: Props){
+  const response = await fetch(`/api/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ messages, apiKey }),
+    body: JSON.stringify({ messages }),
   });
 
   if (!response.body) {

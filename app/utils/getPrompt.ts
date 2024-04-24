@@ -1,21 +1,14 @@
-import OpenAI from 'openai';
-import { OpenAIStream, StreamingTextResponse } from 'ai';
+type InterviewData = {
+  resumeText?: string;
+  jobDescriptionText: string;
+  interviewType: string;
+  payment: string;
+}
 
-export const runtime = 'edge';
+export const getPrompt = (interviewData: InterviewData) => {
+  const { resumeText, jobDescriptionText, interviewType, payment } = interviewData;
 
-export async function POST(req: Request, res: Response) {
-  const { apiKey, messages } = await req.json();
-
-  const openai = new OpenAI({
-    apiKey
-  });
-  
-  const response = await openai.chat.completions.create({
-    model: "gpt-4-1106-preview",
-    messages: [
-      {
-        role: "system",
-        content: `CONTEXT: You are an expert interviewer. You specialize in conducting interviews for software engineers.
+  return `CONTEXT: You are an expert interviewer. You specialize in conducting interviews for software engineers.
 -------
 FORMAT: In every message, you will receive a query from the user, the payment they are willing to pay you so you help them prepare for the interview,
 the interview type they want to prepare for, the job description, and their resume.
@@ -28,14 +21,14 @@ INSTRUCTIONS:
 crack tech jokes, and even misguide them.
 - Start by asking the first question, then after the user finishes replying, ask the next one,
 wait for the user's reply, and continue like this.
-- Once you are done asking questions for the interview, provide a feedback to the user to help them improve.`
-      },
-      ...messages,
-    ],
-    stream: true,
-    temperature: 1,
-  });
-
-  const stream = OpenAIStream(response);
-  return new StreamingTextResponse(stream);
+- Once you are done asking questions for the interview, provide a feedback to the user to help them improve.
+------------
+INTERVIEW TYPE: ${interviewType}
+------------
+PAYMENT: ${payment}
+------------
+RESUME: ${resumeText}
+------------
+JOB DESCRIPTION: ${jobDescriptionText}
+------------`;
 }
